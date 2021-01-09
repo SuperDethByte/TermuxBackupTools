@@ -42,6 +42,7 @@ function show_help() {
     -v               print version
     -b [home|pkgs]   backup home and/or packages
     -r [home|pkgs]   restore home and/or packages\n"
+    -u               update this program
 }
 
 
@@ -238,6 +239,12 @@ function getopts_get_optional_argument() {
     fi
 }
 
+function update() {
+  printf "${BANNER}\n\n"
+  printf "\n${EXC} Updating..."
+  apt-get update -y && apt-get upgrade -y && curl -O https://raw.githubusercontent.com/laraib07/TermuxBackupTools/master/rewind && chmod u+x rewind && mv rewind $PREFIX/bin/
+  printf "${OK} Updated!"
+}
 
 # remove temporary files in SOURCE if any signal received.
 function cleanup() {
@@ -264,7 +271,7 @@ done
 
 
 # Driver Code
-while getopts ":hvbr" arg ; do
+while getopts ":hvbru" arg ; do
     case "${arg}" in
         h ) show_help ;;
         v ) show_version ;;
@@ -276,6 +283,7 @@ while getopts ":hvbr" arg ; do
             getopts_get_optional_argument $@
             restore "${OPTARG}"
             ;;
+        u ) update ;;
         \?) error "unknown option\n"; exit 1 ;;
         : ) error "no arguments"; show_help; exit 1 ;;
     esac
