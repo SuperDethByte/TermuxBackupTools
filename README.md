@@ -6,9 +6,6 @@ restore home directory and packages installed manually.
 
 ![rewind](rewind.png)
 
-
-### created by [Laraib07](https://github.com/laraib07)
-
 ## Installation
 
 Just copy paste this in your termux.
@@ -22,29 +19,24 @@ apt-get update && apt-get upgrade -y
 2.
 
 ```bash
-apt-get install wget curl tar -y
+apt-get install curl tar -y
 ```
 
 3.
 
 ```bash
-wget https://raw.githubusercontent.com/laraib07/TermuxBackupTools/master/rewind && chmod u+x rewind && mv rewind $PREFIX/bin/
-```
-
-or
-
-```bash
-curl -O https://raw.githubusercontent.com/laraib07/TermuxBackupTools/master/rewind && chmod u+x rewind && mv rewind $PREFIX/bin/
+curl -O https://raw.githubusercontent.com/DethByte64/TermuxBackupTools/master/rewind && chmod u+x rewind && mv rewind $PREFIX/bin/
 ```
 
 ## Usage
 
-Usage : **rewind**  [-hv] [-b|-r [home|pkgs]]
+Usage : **rewind**  [-hvu] [-b|-r [home|pkgs]]
 
 option           |   Description
 :---------------:|:---------------------------:
  -h              |    print this usage
  -v              |    print version
+ -u              |    update the script
  -b [home|pkgs]  |    backup home and/or packages
  -r [home|pkgs]  |    restore home and/or packages
 
