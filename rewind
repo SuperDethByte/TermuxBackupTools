@@ -21,16 +21,16 @@ G='\e[1;32m' # green
 W='\e[1;37m' # white bold
 off='\e[0m'  # turn off color
 t='       '    # tab
-OK=" $W[$G - $W]$off"
+OK=" $W[$G + $W]$off"
 EXC=" $W[$R ! $W]$off"
 
 
 # Banner
 read -r -d '' BANNER << EOF
 $W■──────────────────────────────────■
-│$R   █▀▀█ █▀▀ █   █  ▀  █▀▀▄ █▀▀▄  $W │
-│$R   █▄▄▀ █▀▀ █▄█▄█ ▀█▀ █  █ █  █  $W │
-│$R   ▀ ▀▀ ▀▀▀  ▀ ▀  ▀▀▀ ▀  ▀ ▀▀▀   $W │
+│$G   █▀▀█ █▀▀ █   █  ▀  █▀▀▄ █▀▀▄  $W │
+│$G   █▄▄▀ █▀▀ █▄█▄█ ▀█▀ █  █ █  █  $W │
+│$G   ▀ ▀▀ ▀▀▀  ▀ ▀  ▀▀▀ ▀  ▀ ▀▀▀   $W │
 ■──────────────────────────────────■$off
 EOF
 
@@ -51,7 +51,7 @@ function show_version() {
 
 
 function error() {
-    printf "${program_name}: $*\n" >&2
+    printf " $W[$R - $W]$off $*\n" >&2
 }
 
 
@@ -112,9 +112,12 @@ function backup_pkgs(){
         [[ $i ]] && IFS=" " tmp_array["${i:- }"]=1
     done
 
-    printf "$t%s\n" "${!tmp_array[@]}" | tee  ${DEST}/pkgs.bak
+    printf "$t%s\n" "${!tmp_array[@]}" | tee  $HOME/pkgs.list
+    python3 -m pip list | cut -d' ' -f1 | tail -n +3 > $HOME/pips.list
 
     printf  "\n${OK} Packages backed up\n\a"
+
+
 }
 
 
@@ -133,8 +136,8 @@ function backup() {
             backup_pkgs
             ;;
         '' )
-            backup_home
             backup_pkgs
+            backup_home
             ;;
         * )
             error "invalid argument"
@@ -168,12 +171,14 @@ function restore_pkgs() {
         exit 1
     fi
 
-    if [[ -f "${DEST}/pkgs.bak" ]]; then
+    if [[ -f "$HOME/pkgs.list" ]]; then
         printf  "${EXC} Restoring packages\n"
         printf  "${t}Be patient...\n\n"
 
-        if apt-get install -y $(awk '{print $1}' ${DEST}/pkgs.bak ) ; then
-
+        if apt-get install -y $(awk '{print $1}' $HOME/pkgs.list ) ; then
+            for i in $(cat pips.list); do
+                python3 -m pip install $i
+            done
             printf  "${OK} packages restored\n"
             printf  "${t}start a new session.\n\a"
         fi
@@ -238,6 +243,11 @@ function getopts_get_optional_argument() {
     fi
 }
 
+function update() {
+  printf "${BANNER}\n\n"
+  printf "\n${EXC} Updating..."
+  apt-get update -y && apt-get upgrade -y && curl -O https://raw.githubusercontent.com/laraib07/TermuxBackupTools/master/rewind && chmod u+x rewind && mv rewind $PREFIX/bin/
+}
 
 # remove temporary files in SOURCE if any signal received.
 function cleanup() {
@@ -264,7 +274,7 @@ done
 
 
 # Driver Code
-while getopts ":hvbr" arg ; do
+while getopts ":hvbru" arg ; do
     case "${arg}" in
         h ) show_help ;;
         v ) show_version ;;
@@ -276,6 +286,7 @@ while getopts ":hvbr" arg ; do
             getopts_get_optional_argument $@
             restore "${OPTARG}"
             ;;
+        u ) update ;;
         \?) error "unknown option\n"; exit 1 ;;
         : ) error "no arguments"; show_help; exit 1 ;;
     esac
